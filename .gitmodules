@@ -1,0 +1,12 @@
+[submodule "external/lua"]
+	path = external/lua
+	url = https://github.com/lua/lua
+[submodule "external/SDL-2.30.12"]
+	path = external/SDL-2.30.12
+	url = https://github.com/libsdl-org/SDL
+[submodule "external/SDL_ttf-2.24.0"]
+	path = external/SDL_ttf-2.24.0
+	url = https://github.com/libsdl-org/SDL_ttf
+[submodule "external/SDL_image-2.8.8"]
+	path = external/SDL_image-2.8.8
+	url = https://github.com/libsdl-org/SDL_image

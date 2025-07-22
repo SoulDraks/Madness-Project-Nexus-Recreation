@@ -1,0 +1,11 @@
+C/C++
+CMake
+CMake Tools
+Color Picker
+GitHub Codespaces
+GitHub Repositories
+GitHub Repository
+javaScript (ES6) code snippets
+Live Server
+Lua
+Material Icon Theme

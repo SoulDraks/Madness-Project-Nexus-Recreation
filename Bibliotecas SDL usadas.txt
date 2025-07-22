@@ -1,0 +1,4 @@
+Madness Project Nexus Proyecto C. Bibliotecas de SDL usadas:
+SDL: 2.30.12
+SDL_image: 2.8.5
+SDL_ttf: 2.24.0
