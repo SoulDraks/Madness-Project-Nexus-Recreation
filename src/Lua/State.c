@@ -1,6 +1,5 @@
+#include "State.h"
 #include "Math/SoulMath.h"
-#include "types/Vector2.h"
-#include "types/Color.h"
 #include "Core/MadObject.h"
 #include "Core/UI/Panel.h"
 #include "Core/UI/Image.h"
@@ -10,24 +9,30 @@
 #include "Core/Animation/Animation.h"
 #include "Render/Window.h"
 #include "Engine/Engine.h"
-#include "Sol/sol.h"
+
+// Estado Global de Lua
+static lua_State* gL = NULL;
 
 // Funcion auxiliar que registra todas las "clases" a lua.
-static void initialize_classes(lua_State *L)
+static void initialize_classes()
 {
-    Vector2_register(L);
-    Color_register(L);
-    SoulMath_register(L);
-    MadObject_register(L);
-    Panel_register(L);
-    Image_register(L);
-    Button_register(L);
-    Label_register(L);
-    Gif_register(L);
-    Animation_register(L);
-    Window_register(L);
-    Engine_register(L);
-    Sol_register(L);
+    Vector2_register(gL);
+    Color_register(gL);
+    SoulMath_register(gL);
+    MadObject_register(gL);
+    Panel_register(gL);
+    Image_register(gL);
+    Button_register(gL);
+    Label_register(gL);
+    Gif_register(gL);
+    Animation_register(gL);
+    Window_register(gL);
+    Engine_register(gL);
+}
+
+lua_State* getLuaState()
+{
+    return gL;
 }
 
 // Funcion auxiliar para lua para lanzar un error en caso de que se quiera realizar una operacion con un objeto ya liberado.
@@ -81,12 +86,11 @@ static void processExtraArguments(lua_State *L, const int argCount, va_list args
         case LUA_TNIL:
             lua_pushnil(L);
             break;
-        case LUA_TUSERDATA:
-        case LUA_TTABLE:
+        case LUA_TUSERDATA: case LUA_TTABLE:
         {
             int refID = va_arg(args, int);
-            bool isWeakRef = va_arg(args, int);
-            if (isWeakRef)
+            bool isWeakRef = va_arg(args, bool);
+            if(isWeakRef)
             {
                 getWeakRefsTable(L);
                 lua_rawgeti(L, -1, refID);
@@ -102,6 +106,43 @@ static void processExtraArguments(lua_State *L, const int argCount, va_list args
         }
     }
     va_end(args);
+}
+
+void Lua_Init()
+{
+    gL = luaL_newstate();
+    // Crear la tabla de referencias debiles.
+    luaL_newmetatable(gL, "weakRefs");
+
+    lua_pushstring(gL, "v");
+    lua_setfield(gL, -2, "__mode"); // Hacer que los valores de la tabla solo puedan almacenar referencias debiles.
+
+    lua_pushvalue(gL, -1);
+    lua_setmetatable(gL, -2);
+
+    lua_pop(gL, 1);
+    // Crear la metatabla "freedObject" para los objetos liberados
+    luaL_newmetatable(gL, "freedObject");
+
+    lua_pushcfunction(gL, freedObjectMethodError);
+    lua_setfield(gL, -2, "__call");
+
+    lua_pushcfunction(gL, freedObjectMethodIndex);
+    lua_setfield(gL, -2, "__index");
+
+    lua_pushcfunction(gL, freedObjectMethodError);
+    lua_setfield(gL, -2, "__newindex");
+
+    lua_pushcfunction(gL, freedObjectMethodToString);
+    lua_setfield(gL, -2, "__tostring");
+
+    lua_pushcfunction(gL, freedObjectMethodEq);
+    lua_setfield(gL, -2, "__eq");
+
+    lua_pop(gL, 1);
+
+    luaL_openlibs(gL);
+    initialize_classes();
 }
 
 int callLuaFunction(lua_State *L, const char *name, int argCount, ...)
@@ -151,14 +192,14 @@ int callLuaFunction2(lua_State *L, luaFuncRef func, bool weakRef, int argCount, 
     {
         // Si fallo, mostrar el error.
         lua_Debug ar;
-        const char *funcName = NULL;
+        const char* funcName = NULL;
         // Obtener el nombre de la funcion si es que tiene.
-        if (lua_getstack(L, 1, &ar))
+        if(lua_getstack(L, 1, &ar))
         {
             lua_getinfo(L, "n", &ar);
             funcName = ar.name;
         }
-        if (funcName != NULL)
+        if(funcName != NULL)
             printf("Error to execute the function '%s': %s\n", funcName, lua_tostring(L, -1));
         else
             printf("Error to execute a function: %s\n", lua_tostring(L, -1));
@@ -218,40 +259,15 @@ void callLuagc(lua_State *L, int index)
     lua_pop(L, 1); // sacar metatabla
 }
 
-void initLua(lua_State *L)
+void lua_executescript(lua_State* L, const char* path)
 {
-    // Crear la tabla de referencias debiles.
-    luaL_newmetatable(L, "weakRefs");
-
-    lua_pushstring(L, "v");
-    lua_setfield(L, -2, "__mode"); // Hacer que los valores de la tabla solo puedan almacenar referencias debiles.
-
-    luaL_getmetatable(L, "weakRefs");
-    lua_setmetatable(L, -2);
-
-    lua_pop(L, 1);
-    // Crear la metatabla "freedObject" para los objetos liberados
-    luaL_newmetatable(L, "freedObject");
-
-    lua_pushcfunction(L, freedObjectMethodError);
-    lua_setfield(L, -2, "__call");
-
-    lua_pushcfunction(L, freedObjectMethodIndex);
-    lua_setfield(L, -2, "__index");
-
-    lua_pushcfunction(L, freedObjectMethodError);
-    lua_setfield(L, -2, "__newindex");
-
-    lua_pushcfunction(L, freedObjectMethodToString);
-    lua_setfield(L, -2, "__tostring");
-
-    lua_pushcfunction(L, freedObjectMethodEq);
-    lua_setfield(L, -2, "__eq");
-
-    lua_pop(L, 1);
-
-    luaL_openlibs(L);
-    initialize_classes(L);
+    if(luaL_dofile(L, path) != LUA_OK)
+    {
+        fprintf(stderr, "%s\n", lua_tostring(L, -1));
+        lua_pop(L, 1);  // Limpiar el error de la pila
+    }
+    lua_gc(L, LUA_GCCOLLECT, 0); // Recolectar basura por seguridad.
+    lua_gc(L, LUA_GCCOLLECT, 0); // Otra mas por si quedo algo.
 }
 
 void* lua_testinstance(lua_State *L, int idx, const char *tname)
@@ -293,17 +309,6 @@ void* lua_checkinstance(lua_State *L, int idx, const char *tname)
     void *instance = lua_testinstance(L, idx, tname);
     luaL_argexpected(L, instance != NULL, idx, tname);
     return instance;
-}
-
-void lua_executescript(lua_State* L, const char* path)
-{
-    if (luaL_dofile(L, path) != LUA_OK)
-    {
-        fprintf(stderr, "%s\n", lua_tostring(L, -1));
-        lua_pop(L, 1);  // Limpiar el error de la pila
-    }
-    lua_gc(L, LUA_GCCOLLECT, 0); // Recolectar basura por seguridad.
-    lua_gc(L, LUA_GCCOLLECT, 0); // Otra mas por si quedo algo.
 }
 
 void lua_getDinamicField(lua_State *L, const int ud, const char *key)
