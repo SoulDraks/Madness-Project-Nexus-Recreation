@@ -2,6 +2,7 @@
 #define GAME_H
 
 #include "Core/MadObject.h"
+#define QUEUE_SIZE 4098
 
 typedef struct {
     double deltaTime;
@@ -10,7 +11,7 @@ typedef struct {
 } Engine;
 
 extern Engine* Engine_getInstance();
-extern void Engine_Init(lua_State* L);
+extern void Engine_Init();
 // Maneja toda la logica del juego y su bucle.
 extern void Engine_Loop();
 extern void Engine_addObjectQueue(MadObject* obj, const bool freeAllChilds);

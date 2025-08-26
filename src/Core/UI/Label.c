@@ -179,6 +179,16 @@ Vector2 Label_getSize(Label* self)
     return self->base.size;
 }
 
+static void Label_setSize(Label* self, Vector2 value)
+{
+    self->base.size = value;
+}
+
+static int Label_getFontSize(Label* self)
+{
+    return self->fontSize;
+}
+
 void Label_setFontSize(Label* self, const int size)
 {
     if(self->fontBuffer == NULL)
@@ -241,229 +251,6 @@ void Label_applyOutline(Label* self, Color outlineColor, int outlineSize)
 
 /* <------- BINDINGS ------->*/
 
-static int Label_newLua(lua_State* L)
-{
-    Label* instance = Label_new();
-    Label** instanceLua = (Label**)lua_newuserdata(L, sizeof(Label*));
-    *instanceLua = instance;
-    MADOBJECT_NEWLUA((MadObject*)instance);
-
-    luaL_getmetatable(L, "Label");
-    lua_setmetatable(L, -2);
-
-    return 1;
-}
-
-static int Label_indexLua(lua_State* L)
-{
-    Label** self = (Label**)lua_checkinstance(L, 1, "Label");
-    const char* key = luaL_checkstring(L, 2);
-    if(strcmp(key, "pos") == 0)
-    {
-        Vector2* vec = (Vector2*)lua_newuserdata(L, sizeof(Vector2));
-        *vec = (*self)->base.pos;
-        luaL_getmetatable(L, "Vector2");
-        lua_setmetatable(L, -2);
-    }
-    else if(strcmp(key, "globalPos") == 0)
-    {
-        Vector2* vec = (Vector2*)lua_newuserdata(L, sizeof(Vector2));
-        *vec = (*self)->base.globalPos;
-        luaL_getmetatable(L, "Vector2");
-        lua_setmetatable(L, -2);
-    }
-    else if(strcmp(key, "size") == 0)
-    {
-        Vector2* vec = (Vector2*)lua_newuserdata(L, sizeof(Vector2));
-        *vec = Label_getSize(*self);
-        luaL_getmetatable(L, "Vector2");
-        lua_setmetatable(L, -2);
-    }
-    else if(strcmp(key, "scale") == 0)
-    {
-        Vector2* vec = (Vector2*)lua_newuserdata(L, sizeof(Vector2));
-        *vec = (*self)->base.scale;
-        luaL_getmetatable(L, "Vector2");
-        lua_setmetatable(L, -2);
-    }
-    else if(strcmp(key, "globalScale") == 0)
-    {
-        Vector2* vec = (Vector2*)lua_newuserdata(L, sizeof(Vector2));
-        *vec = (*self)->base.globalScale;
-        luaL_getmetatable(L, "Vector2");
-        lua_setmetatable(L, -2);
-    }
-    else if(strcmp(key, "color") == 0)
-    {
-        Color* color = (Color*)lua_newuserdata(L, sizeof(Color));
-        *color = (*self)->base.color;
-        luaL_getmetatable(L, "Color");
-        lua_setmetatable(L, -2);
-    }
-    else if(strcmp(key, "rotation") == 0)
-        lua_pushnumber(L, (lua_Number)(*self)->base.rotation);
-    else if(strcmp(key, "visible") == 0)
-        lua_pushboolean(L, (*self)->base.visible);
-    else if(strcmp(key, "flip") == 0)
-        lua_pushboolean(L, (*self)->base.flip);
-    else if(strcmp(key, "name") == 0)
-        lua_rawgeti(L, LUA_REGISTRYINDEX, (*self)->base.name.ref);
-    else if(strcmp(key, "text") == 0)
-        lua_rawgeti(L, LUA_REGISTRYINDEX, (*self)->text.ref);
-    else if(strcmp(key, "fontPath") == 0)
-        lua_rawgeti(L, LUA_REGISTRYINDEX, (*self)->fontPath.ref);
-    else if(strcmp(key, "fontSize") == 0)
-        lua_pushinteger(L, (*self)->fontSize);
-    else
-        lua_getDinamicField(L, 1, key);
-
-    return 1;
-}
-
-static int Label_newindexLua(lua_State* L)
-{
-    Label** self = (Label**)lua_checkinstance(L, 1, "Label");
-    const char* key = luaL_checkstring(L, 2);
-    if(strcmp(key, "pos") == 0)
-    {
-        Vector2* value = (Vector2*)luaL_checkudata(L, 3, "Vector2");
-        MadObject_setPosition((MadObject*)(*self), *value);
-    }
-    else if(strcmp(key, "pos_x") == 0)
-    {
-        float value = (float)luaL_checknumber(L, 3);
-        MadObject_setPosition((MadObject*)(*self), (Vector2){value, (*self)->base.pos.y});
-    }
-    else if(strcmp(key, "pos_y") == 0) \
-    {
-        float value = (float)luaL_checknumber(L, 3);
-        MadObject_setPosition((MadObject*)(*self), (Vector2){(*self)->base.pos.x, value});
-    }
-    else if(strcmp(key, "globalPos") == 0)
-    {
-        Vector2* value = (Vector2*)luaL_checkudata(L, 3, "Vector2");
-        MadObject_setGlobalPosition((MadObject*)(*self), *value); \
-    } \
-    else if(strcmp(key, "globalPos_x") == 0)
-    {
-        float value = (float)luaL_checknumber(L, 3);
-        MadObject_setGlobalPosition((MadObject*)(*self), (Vector2){value, (*self)->base.globalPos.y});
-    }
-    else if(strcmp(key, "globalPos_y") == 0)
-    {
-        float value = (float)luaL_checknumber(L, 3);
-        MadObject_setGlobalPosition((MadObject*)(*self), (Vector2){(*self)->base.globalPos.x, value}); \
-    }
-    else if(strcmp(key, "size") == 0)
-    {
-        Vector2* value = (Vector2*)luaL_checkudata(L, 3, "Vector2");
-        (*self)->base.size = *value;
-    }
-    else if(strcmp(key, "scale") == 0)
-    {
-        Vector2* value = (Vector2*)luaL_checkudata(L, 3, "Vector2"); \
-        (*self)->base.scale = *value; \
-    }
-    else if(strcmp(key, "scale_x") == 0)
-    {
-        float value = (float)luaL_checknumber(L, 3);
-        MadObject_setScale((MadObject*)(*self), (Vector2){value, (*self)->base.scale.y});
-    }
-    else if(strcmp(key, "scale_y") == 0)
-    {
-        float value = (float)luaL_checknumber(L, 3);
-        MadObject_setScale((MadObject*)(*self), (Vector2){(*self)->base.scale.x, value});
-    }
-    else if(strcmp(key, "color") == 0)
-    {
-        Color* value = (Color*)luaL_checkudata(L, 3, "Color");
-        MadObject_setColor((MadObject*)(*self), *value);
-    }
-    else if(strcmp(key, "color_r") == 0)
-    {
-        int value = luaL_checkinteger(L, 3);
-        INT_TO_UINT8(value);
-        MadObject_setColor((MadObject*)(*self), (Color){(Uint8)value, (*self)->base.color.g, (*self)->base.color.b, (*self)->base.color.a});
-        (*self)->mustBeRerendered = true;
-    }
-    else if(strcmp(key, "color_g") == 0)
-    {
-        int value = luaL_checkinteger(L, 3);
-        INT_TO_UINT8(value);
-        MadObject_setColor((MadObject*)(*self), (Color){(*self)->base.color.r, (Uint8)value, (*self)->base.color.b, (*self)->base.color.a});
-        (*self)->mustBeRerendered = true;
-    }
-    else if(strcmp(key, "color_b") == 0)
-    {
-        int value = luaL_checkinteger(L, 3);
-        INT_TO_UINT8(value);
-        MadObject_setColor((MadObject*)(*self), (Color){(*self)->base.color.r, (*self)->base.color.g, (Uint8)value, (*self)->base.color.a});
-        (*self)->mustBeRerendered = true;
-    }
-    else if(strcmp(key, "color_a") == 0)
-    {
-        int value = luaL_checkinteger(L, 3);
-        INT_TO_UINT8(value);
-        MadObject_setColor((MadObject*)(*self), (Color){(*self)->base.color.r, (*self)->base.color.g, (*self)->base.color.b, (Uint8)value});
-        (*self)->mustBeRerendered = true;
-    }
-    else if(strcmp(key, "rotation") == 0)
-    {
-        float value = luaL_checknumber(L, 3);
-        (*self)->base.rotation = value;
-    }
-    else if(strcmp(key, "visible") == 0)
-    {
-        if(lua_isboolean(L, 3))
-        {
-            int value = lua_toboolean(L, 3);
-            (*self)->base.visible = value;
-        }
-    }
-    else if(strcmp(key, "flip") == 0)
-    {
-        if(lua_isboolean(L, 3))
-        {
-            int value = lua_toboolean(L, 3);
-            (*self)->base.flip = value;
-        }
-    }
-    else if(strcmp(key, "name") == 0)
-    {
-        if(lua_isstring(L, 3))
-        { 
-            String_free((*self)->base.name);
-            (*self)->base.name = String_newFromLua(L, 3);
-        }
-    }
-    else if(strcmp(key, "text") == 0)
-    {
-        if(lua_isstring(L, 3))
-        {
-            String_free((*self)->text);
-            (*self)->text = String_newFromLua(L, 3);
-        }
-    }
-    else if(strcmp(key, "fontSize") == 0)
-        Label_setFontSize(*self, luaL_checkinteger(L, 3));
-    else
-        lua_setDinamicField(L, 1, key);
-    
-    return 0;
-}
-
-static int Label_gc(lua_State* L)
-{
-    Label** self = (Label**)lua_checkinstance(L, 1, "Label");
-    if(*self != NULL)
-    {
-        Label_free(*self);
-        free(*self);
-        *self = NULL;
-    }
-    return 0;
-}
-
 static int Label_loadFontLua(lua_State* L)
 {
     Label** self = (Label**)lua_checkinstance(L, 1, "Label");
@@ -508,6 +295,7 @@ static int Label_applyOutlineLua(lua_State* L)
 
 void Label_register(lua_State* L)
 {
+    /*
     luaL_newmetatable(L, "Label");
 
     lua_pushcfunction(L, Label_indexLua);
@@ -538,4 +326,19 @@ void Label_register(lua_State* L)
     lua_setfield(L, -2, "__extends");
 
     lua_setglobal(L, "Label");
+    */
+    Lua_registerclass("Label",
+        CONSTRUCTOR, Label_new,
+        DESTRUCTOR, Label_free,
+        EXTENDS, "MadObject",
+        FIELDGETTERSETTER, "size", TVECTOR2, Label_getSize, Label_setSize,
+        FIELD, "text", TSTRING, offsetof(Label, text),
+        FIELDREADONLY, "fontPath", TSTRING, offsetof(Label, fontPath),
+        FIELDGETTERSETTER, "fontSize", TINT, Label_getFontSize, Label_setFontSize,
+        FUNC, "loadFont", Label_loadFontLua,
+        FUNC, "applyGlowFilter", Label_applyGlowFilterLua,
+        FUNC, "applyShadowFilter", Label_applyShadowFilterLua,
+        FUNC, "applyOutline", Label_applyOutlineLua,
+        END
+    );
 }

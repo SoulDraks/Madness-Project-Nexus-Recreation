@@ -8,32 +8,29 @@
 #include "Input/KeyManager.h"
 #include "Render/Renderer.h"
 #include "Render/Window.h"
-#include "Lua/LuaManager.h"
+#include "Lua/State.h"
 #include "Engine/Engine.h"
 #include "Core/UI/Label.h"
+#include "Core/Animation/Animation.h"
 
 int main()
 {
-    // Crear el estado de Lua.
-    lua_State* L = luaL_newstate();
-    // Inicializar absolutamente Todo.
-    String_init(L);
+    Lua_Init();
     SoulMath_init();
-    initLua(L);
     initSDL();
     Window_init();
     initRender(getWindow());
-    Mouse_Init(L);
-    KeyManager_Init(L);
-    Engine_Init(L);
+    Mouse_Init();
+    KeyManager_Init();
+    Engine_Init();
     
     // Ejecutamos el script principal.
-    lua_executescript(L, "scripts/main.lua");
+    lua_executescript(getLuaState(), "scripts/main.lua");
     Engine_Loop();
 
-    lua_close(L);
-    renderDestroy();
     Window_destroy();
+    lua_close(getLuaState());
+    renderDestroy();
     TTF_Quit();
     SDL_Quit();
     return EXIT_SUCCESS;

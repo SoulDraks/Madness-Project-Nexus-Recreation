@@ -8,8 +8,9 @@ MouseState* getMouseState()
     return mousestate;
 }
 
-void Mouse_Init(lua_State* L)
+void Mouse_Init()
 {
+    lua_State* L = getLuaState();
     mousestate = malloc(sizeof(MouseState));
     mousestate->x = 0;
     mousestate->y = 0;

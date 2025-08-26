@@ -1,11 +1,10 @@
 #ifndef COLOR_H
 #define COLOR_H
 
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
 #include <SDL.h>
 #include "types/bool.h"
+
+struct lua_State;
 
 typedef struct {
     Uint8 r, g, b, a;
@@ -27,6 +26,6 @@ extern Color Color_mul(const Color color, const float scalar);
 extern Color Color_div(const Color color, const float scalar);
 extern bool Color_eq(const Color c1, const Color c2);
 extern const char* Color_tostring(const Color self);
-extern void Color_register(lua_State* L);
+extern void Color_register(struct lua_State* L);
 
 #endif

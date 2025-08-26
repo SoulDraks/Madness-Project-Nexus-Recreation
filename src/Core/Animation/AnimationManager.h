@@ -1,10 +1,7 @@
 #ifndef ANIMATIONMANAGER_H
 #define ANIMATIONMANAGER_H
 
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
-#include "Lua/LuaManager.h"
+#include "Lua/State.h"
 #include "types/bool.h"
 #include "Animation.h"
 

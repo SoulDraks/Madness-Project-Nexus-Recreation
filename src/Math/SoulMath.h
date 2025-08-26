@@ -1,19 +1,14 @@
 #ifndef SOULMATH_H
 #define SOULMATH_H
 
-#include <lua.h>
-#include <lualib.h>
-#include <lauxlib.h>
 #include <math.h>
-#include "types/Vector2.h"
-#include "types/Color.h"
-#include "types/bool.h"
+#include "Lua/State.h"
 
 typedef enum {
-    TVECTOR2,
-    TCOLOR,
-    TINT,
-    TFLOAT
+    VECTOR2,
+    COLOR,
+    INT,
+    FLOAT
 } interpolableTypes;
 
 union interpolableValues {

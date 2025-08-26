@@ -181,7 +181,7 @@ void SoulMath_pushInterpolableValue(lua_State* L, const InterpolableValue value)
 {
     switch(value.type)
     {
-        case TVECTOR2:
+        case VECTOR2:
         {
             Vector2* vec = (Vector2*)lua_newuserdata(L, sizeof(Vector2));
             *vec = value.values.vec;
@@ -189,7 +189,7 @@ void SoulMath_pushInterpolableValue(lua_State* L, const InterpolableValue value)
             lua_setmetatable(L, -2);
             break;
         }
-        case TCOLOR:
+        case COLOR:
         {
             Color* color = (Color*)lua_newuserdata(L, sizeof(Color));
             *color = value.values.color;
@@ -197,10 +197,10 @@ void SoulMath_pushInterpolableValue(lua_State* L, const InterpolableValue value)
             lua_setmetatable(L, -2);
             break;
         }
-        case TINT:
+        case INT:
             lua_pushinteger(L, value.values.integer);
             break;
-        case TFLOAT:
+        case FLOAT:
             lua_pushnumber(L, value.values.fl);
             break;
         default:
@@ -213,22 +213,22 @@ InterpolableValue SoulMath_lerp(const InterpolableValue start, const Interpolabl
     InterpolableValue final_value;
     switch(start.type)
     {
-        case TVECTOR2:
+        case VECTOR2:
             // final_value.values.vec = start + (end - start) * t
             final_value.values.vec = Vector2_add(start.values.vec, Vector2_mul(Vector2_sub(end.values.vec, start.values.vec), t));
-            final_value.type = TVECTOR2;
+            final_value.type = VECTOR2;
             break;
-        case TCOLOR:
+        case COLOR:
             final_value.values.color = Color_add(start.values.color, Color_mul(Color_sub(end.values.color, start.values.color), t));
-            final_value.type = TCOLOR;
+            final_value.type = COLOR;
             break;
-        case TINT:
+        case INT:
             final_value.values.integer = start.values.integer + (end.values.integer - start.values.integer) * t;
-            final_value.type = TINT;
+            final_value.type = INT;
             break;
-        case TFLOAT:
+        case FLOAT:
             final_value.values.fl = start.values.fl + (end.values.fl - start.values.fl) * t;
-            final_value.type = TFLOAT;
+            final_value.type = FLOAT;
             break;
         default:
             break;
@@ -241,22 +241,22 @@ InterpolableValue SoulMath_quadratic(const InterpolableValue start, const Interp
     InterpolableValue final_value;
     switch(start.type)
     {
-        case TVECTOR2:
+        case VECTOR2:
             // final_value.values.vec = start + (end - start) * (t * t)
             final_value.values.vec = Vector2_add(start.values.vec, Vector2_mul(Vector2_sub(end.values.vec, start.values.vec), t * t));
-            final_value.type = TVECTOR2;
+            final_value.type = VECTOR2;
             break;
-        case TCOLOR:
+        case COLOR:
             final_value.values.color = Color_add(start.values.color, Color_mul(Color_sub(end.values.color, start.values.color), t * t));
-            final_value.type = TCOLOR;
+            final_value.type = COLOR;
             break;
-        case TINT:
+        case INT:
             final_value.values.integer = start.values.integer + (end.values.integer - start.values.integer) * (t * t);
-            final_value.type = TINT;
+            final_value.type = INT;
             break;
-        case TFLOAT:
+        case FLOAT:
             final_value.values.fl = start.values.fl + (end.values.fl - start.values.fl) * (t * t);
-            final_value.type = TFLOAT;
+            final_value.type = FLOAT;
             break;
         default:
             break;
@@ -269,22 +269,22 @@ InterpolableValue SoulMath_cubic(const InterpolableValue start, const Interpolab
     InterpolableValue final_value;
     switch(start.type)
     {
-        case TVECTOR2:
+        case VECTOR2:
             // final_value.values.vec = start + (end - start) * (t * t)
             final_value.values.vec = Vector2_add(start.values.vec, Vector2_mul(Vector2_sub(end.values.vec, start.values.vec), t * t * t));
-            final_value.type = TVECTOR2;
+            final_value.type = VECTOR2;
             break;
-        case TCOLOR:
+        case COLOR:
             final_value.values.color = Color_add(start.values.color, Color_mul(Color_sub(end.values.color, start.values.color), t * t * t));
-            final_value.type = TCOLOR;
+            final_value.type = COLOR;
             break;
-        case TINT:
+        case INT:
             final_value.values.integer = start.values.integer + (end.values.integer - start.values.integer) * (t * t * t);
-            final_value.type = TINT;
+            final_value.type = INT;
             break;
-        case TFLOAT:
+        case FLOAT:
             final_value.values.fl = start.values.fl + (end.values.fl - start.values.fl) * (t * t * t);
-            final_value.type = TFLOAT;
+            final_value.type = FLOAT;
             break;
         default:
             break;
@@ -298,21 +298,21 @@ InterpolableValue SoulMath_sinusoidal(const InterpolableValue start, const Inter
     float factor = (1 - cos(t * PI)) / 2;
     switch (start.type)
     {
-        case TVECTOR2:
+        case VECTOR2:
             final_value.values.vec = Vector2_add(start.values.vec, Vector2_mul(Vector2_sub(end.values.vec, start.values.vec), factor));
-            final_value.type = TVECTOR2;
+            final_value.type = VECTOR2;
             break;
-        case TCOLOR:
+        case COLOR:
             final_value.values.color = Color_add(start.values.color, Color_mul(Color_sub(end.values.color, start.values.color), factor));
-            final_value.type = TCOLOR;
+            final_value.type = COLOR;
             break;
-        case TINT:
+        case INT:
             final_value.values.integer = start.values.integer + (end.values.integer - start.values.integer) * factor;
-            final_value.type = TINT;
+            final_value.type = INT;
             break;
-        case TFLOAT:
+        case FLOAT:
             final_value.values.fl = start.values.fl + (end.values.fl - start.values.fl) * factor;
-            final_value.type = TFLOAT;
+            final_value.type = FLOAT;
             break;
         default:
             break;
@@ -333,21 +333,21 @@ InterpolableValue SoulMath_easeInOut(const InterpolableValue start, const Interp
     InterpolableValue finalValue;
     switch(start.type)
     {
-        case TVECTOR2:
+        case VECTOR2:
             finalValue.values.vec = Vector2_add(start.values.vec, Vector2_mul(Vector2_sub(end.values.vec, start.values.vec), easeInOut(t)));
-            finalValue.type = TVECTOR2;
+            finalValue.type = VECTOR2;
             break;
-        case TCOLOR:
+        case COLOR:
             finalValue.values.color = Color_add(start.values.color, Color_mul(Color_sub(end.values.color, start.values.color), easeInOut(t)));
-            finalValue.type = TCOLOR;
+            finalValue.type = COLOR;
             break;
-        case TFLOAT:
+        case FLOAT:
             finalValue.values.fl = start.values.fl + (end.values.fl - start.values.fl) * easeInOut(t);
-            finalValue.type = TFLOAT;
+            finalValue.type = FLOAT;
             break;
-        case TINT:
+        case INT:
             finalValue.values.integer = start.values.integer + (end.values.integer - start.values.integer) * easeInOut(t);
-            finalValue.type = TINT;
+            finalValue.type = INT;
             break;
     }
     return finalValue;

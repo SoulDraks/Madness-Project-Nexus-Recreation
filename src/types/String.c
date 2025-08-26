@@ -4,15 +4,9 @@
 // Tamaño de buffer local para la concatenacion de strings
 #define BUFFER_SIZE 512
 
-static lua_State* L;
-
-void String_init(lua_State* _L)
-{
-    L = _L;
-}
-
 String String_new(const char* str)
 {
+    lua_State* L = getLuaState();   
     if(str == NULL)
         return NULLSTRING;
     String newStr;
@@ -27,7 +21,7 @@ String String_newFromLua(lua_State* L, int idx)
 {
     String newStr;
     newStr.data = luaL_checklstring(L, idx, &newStr.size);
-    // Lo duplicamos y ponemos en la cima para no perderlo y quitarlo
+    // Lo duplicamos y ponemos en la cima para no perderlo y quitarlo por referenciarlo
     lua_pushvalue(L, idx);
     newStr.ref = luaL_ref(L, LUA_REGISTRYINDEX);
     newStr.L = L;
@@ -36,6 +30,7 @@ String String_newFromLua(lua_State* L, int idx)
 
 String String_dup(String str)
 {
+    lua_State* L = getLuaState();
     if(str.data == NULL)
         return NULLSTRING;
     String newStr;
@@ -49,6 +44,7 @@ String String_dup(String str)
 
 String String_concat(String str1, String str2)
 {
+    lua_State* L = getLuaState();
     String newStr;
     if(str1.size + str2.size > BUFFER_SIZE)
     {

@@ -1,6 +1,7 @@
 #include "Core/MadObject.h"
 #include "Math/SoulMath.h"
 #include "Engine/Engine.h"
+#include "Lua/Bindings.h"
 
 // Actualiza la posicion, escala y rotacion global del objeto en cuestion.
 static inline void updateTransform(MadObject* self)
@@ -137,7 +138,7 @@ MadObject* MadObject_new()
 
 void MadObject_free(MadObject* self)
 {
-    // printf("Se esta liberando un MadObject con nombre: %s\n", self->name);
+    printf("Se esta liberando un MadObject con nombre: %s\n", self->name.data);
     if(self->L != NULL)
     {
         if(self->self_reference != LUA_NOREF)
@@ -168,6 +169,11 @@ void MadObject_setPosition(MadObject* self, const Vector2 value)
     updateTransform(self);
 }
 
+static Vector2 MadObject_getPosition(MadObject* self)
+{
+    return self->pos;
+}
+
 void MadObject_setGlobalPosition(MadObject* self, const Vector2 value)
 {
     if(self->parent != NULL)
@@ -179,10 +185,20 @@ void MadObject_setGlobalPosition(MadObject* self, const Vector2 value)
     updateTransform(self);
 }
 
+static Vector2 MadObject_getGlobalPosition(MadObject* self)
+{
+    return self->globalPos;
+}
+
 void MadObject_setScale(MadObject* self, const Vector2 value)
 {
     self->scale = value;
     updateTransform(self);
+}
+
+static Vector2 MadObject_getScale(MadObject* self)
+{
+    return self->scale;
 }
 
 void MadObject_setGlobalScale(MadObject* self, const Vector2 value)
@@ -198,10 +214,20 @@ void MadObject_setGlobalScale(MadObject* self, const Vector2 value)
     updateTransform(self);
 }
 
-void MadObject_setRotation(MadObject* self, const float value)
+static Vector2 MadObject_getGlobalScale(MadObject* self)
+{
+    return self->globalScale;
+}
+
+void MadObject_setRotation(MadObject* self, const double value)
 {
     self->rotation = value;
     updateTransform(self);
+}
+
+static double MadObject_getRotation(MadObject* self)
+{
+    return self->rotation;
 }
 
 void MadObject_setGlobalRotation(MadObject* self, const float value)
@@ -213,10 +239,20 @@ void MadObject_setGlobalRotation(MadObject* self, const float value)
     updateTransform(self);
 }
 
+static double MadObject_getGlobalRotation(MadObject* self)
+{
+    return self->globalRotation;
+}
+
 void MadObject_setColor(MadObject* self, const Color value)
 {
     self->color = value;
     updateGlobalColor(self);
+}
+
+static Color MadObject_getColor(MadObject* self)
+{
+    return self->globalColor;
 }
 
 void MadObject_callTick(MadObject* self, const double deltaTime)
@@ -367,40 +403,6 @@ void lua_pushMadObject(lua_State* L, MadObject* obj)
 
 /* <----- BINDINGS -----> */
 
-static int MadObject_newLua(lua_State* L)
-{
-    MadObject* instance = MadObject_new();
-    MadObject** instanceLua = (MadObject**)lua_newuserdata(L, sizeof(MadObject*));
-    *instanceLua = instance;
-    MADOBJECT_NEWLUA((MadObject*)instance);
-
-    luaL_getmetatable(L, "MadObject");
-    lua_setmetatable(L, -2);
-    return 1;
-}
-
-static int MadObject_indexLua(lua_State* L)
-{
-    MadObject** self = (MadObject**)lua_checkinstance(L, 1, "MadObject");
-    const char* key = luaL_checkstring(L, 2);
-    MADOBJECT_INDEXLUA(self)
-    else
-        lua_getDinamicField(L, 1, key);
-
-    return 1;
-}
-
-static int MadObject_newindexLua(lua_State* L)
-{
-    MadObject** self = (MadObject**)lua_checkinstance(L, 1, "MadObject");
-    const char* key = luaL_checkstring(L, 2);
-    MADOBJECT_NEWINDEXLUA(self)
-    else
-        lua_setDinamicField(L, 1, key);
-
-    return 0;
-}
-
 static int MadObject_getParentLua(lua_State* L)
 {
     MadObject** self = (MadObject**)lua_checkinstance(L, 1, "MadObject");
@@ -419,7 +421,7 @@ static int MadObject_addChildLua(lua_State* L)
     if(*self == *child)
         return luaL_error(L, "Error: A MadObject cannot add itself as a child.");
     if(isAncestorOf(*self, *child))
-        return luaL_error(L, "Error: the node '%s' is ancestor of: '%s'.", (*self)->name, (*child)->name);
+        return luaL_error(L, "Error: the node '%s' is ancestor of: '%s'.", (*self)->name.data, (*child)->name.data);
 
     lua_pushvalue(L, 2); /* Poner la instancia que añadir como hijo en la cima para referenciarlo */
     MadObjectRef newChild = lua_refMadObject(L, LUA_REGISTRYINDEX);
@@ -511,26 +513,14 @@ static int MadObject_isInsideTreeLua(lua_State* L)
     return 1;
 }
 
-static int MadObject_gc(lua_State* L)
-{
-    MadObject** self = (MadObject**)lua_checkinstance(L, 1, "MadObject");
-    if(*self != NULL)
-    {
-        MadObject_free(*self);
-        free(*self);
-        *self = NULL;
-    }
-    return 0;
-}
-
 static int MadObject_queueFreeLua(lua_State* L)
 {
     MadObject** self = (MadObject**)lua_checkinstance(L, 1, "MadObject");
     if((*self)->queued)
         return 0;
     bool freeAllChilds = false;
-    if(!lua_isnone(L, 2) && lua_isboolean(L, 2))
-        freeAllChilds = (bool)lua_toboolean(L, 2);
+    luaL_checktype(L, 2, LUA_TBOOLEAN);
+    freeAllChilds = (bool)lua_toboolean(L, 2);
         
     Engine_addObjectQueue(*self, freeAllChilds);
     (*self)->queued = true;
@@ -539,40 +529,28 @@ static int MadObject_queueFreeLua(lua_State* L)
 
 void MadObject_register(lua_State* L)
 {
-    luaL_newmetatable(L, "MadObject");
-
-    lua_pushcfunction(L, MadObject_newLua);
-    lua_setfield(L, -2, "new");
-
-    lua_pushcfunction(L, MadObject_indexLua);
-    lua_setfield(L, -2, "__index");
-
-    lua_pushcfunction(L, MadObject_newindexLua);
-    lua_setfield(L, -2, "__newindex");
-
-    lua_pushcfunction(L, MadObject_gc);
-    lua_setfield(L, -2, "__gc");
-
-    lua_pushcfunction(L, MadObject_getParentLua);
-    lua_setfield(L, -2, "getParent");
-
-    lua_pushcfunction(L, MadObject_addChildLua);
-    lua_setfield(L, -2, "addChild");
-
-    lua_pushcfunction(L, MadObject_getChildLua);
-    lua_setfield(L, -2, "getChild");
-
-    lua_pushcfunction(L, MadObject_getChildrenLua);
-    lua_setfield(L, -2, "getChildren");
-
-    lua_pushcfunction(L, MadObject_removeChildLua);
-    lua_setfield(L, -2, "removeChild");
-
-    lua_pushcfunction(L, MadObject_isInsideTreeLua);
-    lua_setfield(L, -2, "isInsideTree");
-
-    lua_pushcfunction(L, MadObject_queueFreeLua);
-    lua_setfield(L, -2, "queueFree");
-
-    lua_setglobal(L, "MadObject");
+    Lua_registerclass("MadObject",
+        CONSTRUCTOR, MadObject_new,
+        DESTRUCTOR, MadObject_free,
+        FIELD, "name", TSTRING, offsetof(MadObject, name),
+        FIELDGETTERSETTER, "pos", TVECTOR2, MadObject_getPosition, MadObject_setPosition,
+        FIELDGETTERSETTER, "globalPos", TVECTOR2, MadObject_getGlobalPosition, MadObject_setGlobalPosition,
+        FIELD, "size", TVECTOR2, offsetof(MadObject, size),
+        FIELDGETTERSETTER, "scale", TVECTOR2, MadObject_getScale, MadObject_setScale,
+        FIELDGETTERSETTER, "globalScale", TVECTOR2, MadObject_getGlobalScale, MadObject_setGlobalScale,
+        FIELDGETTERSETTER, "rotation", TDOUBLE, MadObject_getRotation, MadObject_setRotation,
+        FIELDGETTERSETTER, "globalRotation", TDOUBLE, MadObject_getGlobalRotation, MadObject_setGlobalRotation,
+        FIELDGETTERSETTER, "color", TCOLOR, MadObject_getColor, MadObject_setColor,
+        FIELD, "visible", TBOOL, offsetof(MadObject, visible),
+        FIELD, "flip", TBOOL, offsetof(MadObject, flip),
+        FIELDREADONLY, "childCount", TINT, offsetof(MadObject, childCount),
+        FUNC, "getParent", MadObject_getParentLua,
+        FUNC, "addChild", MadObject_addChildLua,
+        FUNC, "getChild", MadObject_getChildLua,
+        FUNC, "getChildren", MadObject_getChildrenLua,
+        FUNC, "removeChild", MadObject_removeChildLua,
+        FUNC, "isInsideTree", MadObject_isInsideTreeLua,
+        FUNC, "queueFree", MadObject_queueFreeLua,
+        END
+    );
 }

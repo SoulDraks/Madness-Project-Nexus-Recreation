@@ -1,7 +1,8 @@
 #ifndef STRING_H
 #define STRING_H
 
-#include <Lua/LuaManager.h>
+#include "Lua/State.h"
+#include "Lua/Bindings.h"
 
 typedef struct {
     /* Atributos de solo lectura */
@@ -15,7 +16,6 @@ typedef struct {
 #define String_cmp(str1, str2) ((str1).data == (str2).data)
 #define String_free(str) luaL_unref((str).L, LUA_REGISTRYINDEX, (str).ref)
 
-extern void String_init(lua_State* _L);
 extern String String_new(const char* str);
 extern String String_newFromLua(lua_State* L, int idx);
 extern String String_dup(String str);

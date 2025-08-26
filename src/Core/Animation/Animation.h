@@ -1,13 +1,11 @@
 #ifndef ANIMATION_H
 #define ANIMATION_H
 
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
 #include "Core/MadObject.h"
-#include "Lua/LuaManager.h"
+#include "Lua/Bindings.h"
 #include "Math/SoulMath.h"
 
+// Tipos de interpolacion soportados.
 typedef enum {
     NONE,
     LINEAR,

@@ -1,9 +1,7 @@
 #ifndef VECTOR2_H
 #define VECTOR2_H
 
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
+struct lua_State;
 
 typedef struct {
     double x;
@@ -18,6 +16,6 @@ extern int Vector2_eq(const Vector2 v1, const Vector2 v2);
 extern float Vector2_magnitude(const Vector2 self);
 extern Vector2 Vector2_normalize(const Vector2 self);
 extern const char* Vector2_tostring(const Vector2 self);
-extern void Vector2_register(lua_State* L);
+extern void Vector2_register(struct lua_State* L);
 
 #endif

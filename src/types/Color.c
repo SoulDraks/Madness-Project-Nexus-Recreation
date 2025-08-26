@@ -1,4 +1,5 @@
 #include "types/Color.h"
+#include "Lua/State.h"
 
 static int hexToDec(char c)
 {
@@ -216,7 +217,7 @@ static int Color_tostringLua(lua_State* L)
     return 1;
 }
 
-void Color_register(lua_State* L)
+void Color_register(struct lua_State* L)
 {
     luaL_newmetatable(L, "Color");
 

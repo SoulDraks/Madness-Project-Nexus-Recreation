@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include "Lua/State.h"
 
 Vector2 Vector2_add(const Vector2 v1, const Vector2 v2)
 {
@@ -88,14 +89,10 @@ static int Vector2_newindexLua(lua_State* L)
     if(lua_isnumber(L, 3))
     {
         float value = (float)luaL_checknumber(L, 3);
-        if(strcmp(key, "x") == 0)
-        {
+        if(key[0] == 'x')
             self->x = value;
-        }
-        else if(strcmp(key, "y") == 0)
-        {
+        else if(key[0] == 'y')
             self->y = value;
-        }
     }
     return 0;
 }
@@ -104,14 +101,10 @@ static int Vector2_indexLua(lua_State* L)
 {
     Vector2* self = (Vector2*)luaL_checkudata(L, 1, "Vector2");
     const char* key = luaL_checkstring(L, 2);
-    if(strcmp(key, "x") == 0)
-    {
+    if(key[0] == 'x')
         lua_pushnumber(L, (lua_Number)self->x);
-    }
-    else if(strcmp(key, "y") == 0)
-    {
+    else if(key[0] == 'y')
         lua_pushnumber(L, (lua_Number)self->y);
-    }
     else if(strcmp(key, "magnitude") == 0 || strcmp(key, "normalize") == 0)
     {
         lua_getmetatable(L, 1);
@@ -215,7 +208,7 @@ static int Vector2_tostringLua(lua_State* L)
     return 1;
 }
 
-void Vector2_register(lua_State* L)
+void Vector2_register(struct lua_State* L)
 {
     luaL_newmetatable(L, "Vector2");
 

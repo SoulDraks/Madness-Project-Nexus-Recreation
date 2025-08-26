@@ -21,11 +21,6 @@ static SDL_Surface* makeGlowBorder(SDL_Surface* original, Color borderColor, int
     int w = original->w + borderSize * 2;
     int h = original->h + borderSize * 2;
     SDL_Surface* glowSurface = SDL_CreateRGBSurfaceWithFormat(0, w, h, 32, SDL_PIXELFORMAT_RGBA32);
-    if(glowSurface == NULL)
-    {
-        printf("ERROR: %s\n", SDL_GetError());
-        return NULL;
-    }
     // Rellenamos con color transparente
     SDL_FillRect(glowSurface, NULL, SDL_MapRGBA(glowSurface->format, 0, 0, 0, 0));
     // Agregamos copias difuminadas alrededor de la imagen original

@@ -5,8 +5,6 @@
 #include "Render/Renderer.h"
 #include "Render/Window.h"
 
-#define QUEUE_SIZE 4098
-
 typedef struct {
     MadObject* obj;
     bool freeAllChilds;
@@ -80,8 +78,9 @@ Engine* Engine_getInstance()
     return &engine;
 }
 
-void Engine_Init(lua_State* L)
+void Engine_Init()
 {
+    lua_State* L = getLuaState();
     // Inicializamos la lista, array o cola de objetos que deben ser liberados.
     objQueue.size = QUEUE_SIZE;
     objQueue.count = 0;
@@ -105,6 +104,7 @@ void Engine_Init(lua_State* L)
 
     // Creamos el nodo raiz para los objetos en el World.
     MadObject* _rootWorld = MadObject_new();
+    String_free(_rootWorld->name);
     _rootWorld->name = String_new("_rootWorld");
     lua_pushMadObject(L, _rootWorld);
     // Lo ponemos en la cima, lo referenciamos y lo añadimos como hijo.

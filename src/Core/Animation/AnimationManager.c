@@ -52,8 +52,6 @@ void AnimationManager_addAnimation(AnimationRef ref)
     animationmanager.animationsCount++;
 }
 
-// a -> b -> c -> d
-
 void AnimationManager_removeAnimation(const int anim_id)
 {
     if(animationmanager.head == NULL)

@@ -193,7 +193,7 @@ void Animation_update(Animation* self, const float deltaTime)
                     if(!keyframe->hasBeenProcess)
                     {
                         PendingKeyFrame* interpolatedKeyFrames = Animation_findClosestKeyFrame(self, self->currentFrame, keyframe);
-                        if(interpolatedKeyFrames != NULL)
+                        if(interpolatedKeyFrames != NULL) // Se encontro un keyframe?
                         {
                             keyframe->hasBeenProcess = true;
                             // Añadir el PendingKeyFrame al final del array.
@@ -389,8 +389,8 @@ Frame** Animation_resizeFrameArray(Frame** Array, size_t previousSize, size_t ne
 
 void Animation_setTargetField(lua_State* L, const luaObjectRef target, const char* property, const luaObjectRef value)
 {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, target);
-    lua_rawgeti(L, LUA_REGISTRYINDEX, value);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, target); // Ponemos al "target" en la pila
+    lua_rawgeti(L, LUA_REGISTRYINDEX, value); // Ponemos el valor en la pila.
     lua_setfield(L, -2, property);
     // Sacamos el target de la pila.
     lua_pop(L, 1);
@@ -403,22 +403,22 @@ InterpolableValue Animation_valueToInterpolableValue(lua_State* L, luaObjectRef 
     if(luaL_testudata(L, -1, "Vector2") != NULL)
     {
         converted_value.values.vec = *(Vector2*)lua_touserdata(L, -1);
-        converted_value.type = TVECTOR2;
+        converted_value.type = VECTOR2;
     }
     if(luaL_testudata(L, -1, "Color") != NULL)
     {
         converted_value.values.color = *(Color*)lua_touserdata(L, -1);
-        converted_value.type = TCOLOR;
+        converted_value.type = COLOR;
     }
     else if(lua_isinteger(L, -1))
     {
         converted_value.values.integer = lua_tointeger(L, -1);
-        converted_value.type = TINT;
+        converted_value.type = INT;
     }
     else if(lua_isnumber(L, -1))
     {
         converted_value.values.fl = lua_tonumber(L, -1);
-        converted_value.type = TFLOAT;
+        converted_value.type = FLOAT;
     }
     lua_pop(L, -1); // Sacar "value" de la pila.
     return converted_value;
@@ -454,7 +454,7 @@ luaObjectRef Animation_getOrCreateTargetRef(lua_State *L, int index)
 
     // Si no existe, crear una nueva referencia
     lua_pop(L, 1); // Sacar el resultado fallido
-    lua_pushvalue(L, index); // Copiar el valor nuevamente
+    lua_pushvalue(L, index); // Copiamos el valor nuevamente
     int ref = luaL_ref(L, LUA_REGISTRYINDEX);
 
     // Guardar en la tabla de referencias
@@ -484,61 +484,6 @@ void Animation_releaseTargetRef(lua_State* L, luaObjectRef ref)
 
 /* <------------ BINDINGS ------------> */
 
-static int Animation_newLua(lua_State* L)
-{
-    Animation* instance = Animation_new();
-    Animation** instanceLua = (Animation**)lua_newuserdata(L, sizeof(Animation*));
-    *instanceLua = instance;
-    MADOBJECT_NEWLUA((MadObject*)instance);
-
-    luaL_getmetatable(L, "Animation");
-    lua_setmetatable(L, -2);
-
-    return 1;
-}
-
-static int Animation_indexLua(lua_State* L)
-{
-    Animation** self = (Animation**)lua_checkinstance(L, 1, "Animation");
-    const char* key = luaL_checkstring(L, 2);
-    MADOBJECT_INDEXLUA((MadObject**)self)
-    else if(strcmp(key, "playing") == 0)
-        lua_pushboolean(L, (*self)->playing);
-    else if(strcmp(key, "loop") == 0)
-        lua_pushboolean(L, (*self)->loop);
-    else if(strcmp(key, "fps") == 0)
-        lua_pushinteger(L, (*self)->fps);
-    else if(strcmp(key, "currentFrame") == 0)
-        lua_pushinteger(L, (*self)->currentFrame);
-    else
-        lua_getDinamicField(L, 1, key);
-
-    return 1;
-}
-
-static int Animation_newIndexLua(lua_State* L)
-{
-    Animation** self = (Animation**)lua_checkinstance(L, 1, "Animation");
-    const char* key = luaL_checkstring(L, 2);
-    MADOBJECT_NEWINDEXLUA((MadObject**)self)
-    else if(strcmp(key, "loop") == 0)
-    {
-        if(!lua_isboolean(L, 3))
-            return 0;
-        bool value = lua_toboolean(L, 3);
-        (*self)->loop = value;
-    }
-    else if(strcmp(key, "fps") == 0)
-    {
-        int value = luaL_checkinteger(L, 3);
-        (*self)->fps = value;
-    }
-    else
-        lua_setDinamicField(L, 1, key);
-
-    return 0;
-}
-
 static int Animation_setFramesLua(lua_State* L)
 {
     Animation** self = (Animation**)lua_checkinstance(L, 1, "Animation");
@@ -553,7 +498,7 @@ static int Animation_addKeyFrameLua(lua_State* L)
     int inFrame = luaL_checkinteger(L, 2);
     if(inFrame < 0)
         return luaL_error(L, "Error: 'inFrame' cannot be less than or equal to zero.");
-        
+
     if(!lua_isuserdata(L, 3) && !lua_istable(L, 3))
         return luaL_error(L, "expected table or userdata for the parameter 'target' but received %s.", luaL_typename(L, 3));
 
@@ -617,19 +562,9 @@ static int Animation_stopLua(lua_State* L)
     return 0;
 }
 
-static int Animation_gc(lua_State* L)
-{
-    Animation** self = (Animation**)lua_checkinstance(L, 1, "Animation");
-    if(*self != NULL)
-    {
-        Animation_free(*self);
-        *self = NULL;
-    }
-    return 0;
-}
-
 void Animation_register(lua_State* L)
 {
+    /*
     luaL_newmetatable(L, "Animation");
 
     lua_pushcfunction(L, Animation_indexLua);
@@ -666,26 +601,29 @@ void Animation_register(lua_State* L)
     lua_setfield(L, -2, "__extends");
 
     lua_setglobal(L, "Animation");
-
-    lua_createtable(L, 0, 5); // Creamos un enum para lua de "AnimationInterpolationType"
-
-    lua_pushinteger(L, NONE);
-    lua_setfield(L, -2, "NONE");
-
-    lua_pushinteger(L, LINEAR);
-    lua_setfield(L, -2, "LINEAR");
-
-    lua_pushinteger(L, QUADRATIC);
-    lua_setfield(L, -2, "QUADRATIC");
-
-    lua_pushinteger(L, CUBIC);
-    lua_setfield(L, -2, "CUBIC");
-
-    lua_pushinteger(L, SINUSOIDAL);
-    lua_setfield(L, -2, "SINUSOIDAL");
-
-    lua_pushinteger(L, EASEINOUT);
-    lua_setfield(L, -2, "EASEINOUT");
-
-    lua_setglobal(L, "AnimationInterpolationType");
+    */
+    Lua_registerclass("Animation",
+        CONSTRUCTOR, Animation_new,
+        DESTRUCTOR, Animation_free,
+        EXTENDS, "MadObject",
+        FIELD, "loop", TBOOL, offsetof(Animation, loop),
+        FIELD, "fps", TINT, offsetof(Animation, fps),
+        FIELDREADONLY, "playing", TBOOL, offsetof(Animation, playing),
+        FIELDREADONLY, "currentFrame", TINT, offsetof(Animation, currentFrame),
+        FUNC, "setFrames", Animation_setFramesLua,
+        FUNC, "addKeyFrame", Animation_addKeyFrameLua,
+        FUNC, "addFunctionKeyFrame", Animation_addFunctionKeyFrameLua,
+        FUNC, "play", Animation_playLua,
+        FUNC, "playBackwards", Animation_playBackwardsLua,
+        FUNC, "stop", Animation_stopLua,
+        END
+    );
+    Lua_registerenum("AnimationInterpolationType", 6,
+        "NONE", NONE,
+        "LINEAR", LINEAR,
+        "QUADRATIC", QUADRATIC,
+        "CUBIC", CUBIC,
+        "SINUSOIDAL", SINUSOIDAL,
+        "EASEINOUT", EASEINOUT
+    );
 }

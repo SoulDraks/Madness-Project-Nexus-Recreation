@@ -19,12 +19,12 @@ Gif* Gif_new(String path)
     instance->playing = false;
     instance->elapsedTime = 0.0f;
     instance->framesCount = framesCount;
-    printf("%i\n", framesCount);
     // Convertimos cada frame(SDL_Surface) del gif a un SDL_Texture
     for(int i = 0; i < framesCount; i++)
     {
         instance->frames[i].frameTexture = SDL_CreateTextureFromSurface(renderer, gifFile->frames[i]);
-        instance->frames[i].frameDelay = gifFile->delays[i];
+        // Convertir de centecimas de segundos a segundos.
+        instance->frames[i].frameDelay = (double)gifFile->delays[i] / 1000.0;
     }
     IMG_FreeAnimation(gifFile);
     return instance;
@@ -84,7 +84,7 @@ Image* Gif_getFrame(Gif* self, const int frame)
         // Creamos una "instancia" nueva de Image y llamamos a su "constructor".
         Image* image = (Image*)malloc(sizeof(Image));
         MADOBJECT_NEW((MadObject*)self);
-        image->image_buffer = frameDuplicated;
+        image->imageBuffer = frameDuplicated;
         image->path = String_dup(self->path);
         int width, height;
         SDL_QueryTexture(frameDuplicated, NULL, NULL, &width, &height);
@@ -164,54 +164,6 @@ static int Gif_newLua(lua_State* L)
     return 1;
 }
 
-static int Gif_indexLua(lua_State* L)
-{
-    Gif** self = (Gif**)lua_checkinstance(L, 1, "Gif");
-    const char* key = luaL_checkstring(L, 2);
-    MADOBJECT_INDEXLUA((MadObject**)self)
-    else if(strcmp(key, "loop") == 0)
-        lua_pushboolean(L, (*self)->loop);
-    else if(strcmp(key, "path") == 0)
-        lua_rawgeti(L, LUA_REGISTRYINDEX, (*self)->path.ref);
-    else if(strcmp(key, "currentFrame") == 0)
-        lua_pushinteger(L, (*self)->currentFrame);
-    else if(strcmp(key, "playing") == 0)
-        lua_pushboolean(L, (*self)->playing);
-    else if(strcmp(key, "framesCount") == 0)
-        lua_pushinteger(L, (*self)->framesCount);
-    else
-        lua_getDinamicField(L, 1, key);
-    
-    return 1;
-}
-
-static int Gif_newindexLua(lua_State* L)
-{
-    Gif** self = (Gif**)lua_checkinstance(L, 1, "Gif");
-    const char* key = luaL_checkstring(L, 2);
-    MADOBJECT_NEWINDEXLUA((MadObject**)self)
-    else if(strcmp(key, "loop") == 0)
-    {
-        if(lua_isboolean(L, 3))
-        {
-            bool value = lua_toboolean(L, 3);
-            (*self)->loop = value;
-        }
-    }
-    else if(strcmp(key, "playing") == 0)
-    {
-        if(lua_isboolean(L, 3))
-        {
-            bool value = lua_toboolean(L, 3);
-            (*self)->playing = value;
-        }
-    }
-    else
-        lua_setDinamicField(L, 1, key);
-    
-    return 0;
-}
-
 int Gif_getFrameLua(lua_State* L)
 {
     Gif** self = (Gif**)lua_checkinstance(L, 1, "Gif");
@@ -247,20 +199,9 @@ int Gif_gotoAndPlayLua(lua_State* L)
     return 0;
 }
 
-int Gif_gc(lua_State* L)
-{
-    Gif** self = (Gif**)lua_checkinstance(L, 1, "Gif");
-    if(*self != NULL)
-    {
-        Gif_free(*self);
-        free(*self);
-        *self = NULL;
-    }
-    return 0;
-}
-
 void Gif_register(lua_State* L)
 {
+    /*
     luaL_newmetatable(L, "Gif");
 
     lua_pushcfunction(L, Gif_newLua);
@@ -288,4 +229,19 @@ void Gif_register(lua_State* L)
     lua_setfield(L, -2, "__extends");
 
     lua_setglobal(L, "Gif");
+    */
+    Lua_registerclass("Gif",
+        FUNC, "load", Gif_newLua,
+        DESTRUCTOR, Gif_free,
+        EXTENDS, "MadObject",
+        FIELD, "loop", TBOOL, offsetof(Gif, loop),
+        FIELDREADONLY, "path", TSTRING, offsetof(Gif, path),
+        FIELDREADONLY, "currentFrame", TINT, offsetof(Gif, currentFrame),
+        FIELD, "playing", TBOOL, offsetof(Gif, playing),
+        FIELDREADONLY, "framesCount", TINT, offsetof(Gif, framesCount),
+        FUNC, "getFrame", Gif_getFrameLua,
+        FUNC, "gotoAndStop", Gif_gotoAndStopLua,
+        FUNC, "gotoAndPlay", Gif_gotoAndPlayLua,
+        END
+    );
 }

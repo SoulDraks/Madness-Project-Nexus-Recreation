@@ -4,9 +4,6 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
 
 // Obtiene el renderer global.
 SDL_Renderer* GetRenderer();

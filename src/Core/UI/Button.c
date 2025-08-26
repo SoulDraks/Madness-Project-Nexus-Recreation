@@ -1,7 +1,7 @@
 #include "Button.h"
 #include "Input/Mouse.h"
 #include "Math/SoulMath.h"
-#include "Lua/LuaManager.h"
+#include "Lua/Bindings.h"
 
 // Funcion auxiliar que revisa si alguno de sus ancestros no es visible.
 static bool amVisible(Button* self)
@@ -113,81 +113,9 @@ void Button_draw(void* self, SDL_Renderer* renderer)
     }
 }
 
-int Button_newLua(lua_State* L)
-{
-    Button* instance = Button_new();
-    Button** instanceLua = (Button**)lua_newuserdata(L, sizeof(Button*));
-    *instanceLua = instance;
-    MADOBJECT_NEWLUA((MadObject*)instance);
-
-    luaL_getmetatable(L, "Button");
-    lua_setmetatable(L, -2);
-
-    return 1;
-}
-
-int Button_indexLua(lua_State* L)
-{
-    Button** self = (Button**)lua_checkinstance(L, 1, "Button");
-    const char* key = luaL_checkstring(L, 2);
-    MADOBJECT_INDEXLUA((MadObject**)self)
-    else if(strcmp(key, "surface") == 0)
-    {
-        if(!isNullMadObjectRef((*self)->surface))
-            lua_rawgeti(L, LUA_REGISTRYINDEX, (*self)->surface.ref);
-        else
-            lua_pushnil(L);
-    }
-    else if(strcmp(key, "disabled") == 0)
-        lua_pushboolean(L, (int)(*self)->disabled);
-    else
-        lua_getDinamicField(L, 1, key);
-        
-    return 1;
-}
-
-int Button_newindexLua(lua_State* L)
-{
-    Button** self = (Button**)lua_checkinstance(L, 1, "Button");
-    const char* key = luaL_checkstring(L, 2);
-    MADOBJECT_NEWINDEXLUA((MadObject**)self)
-    else if(strcmp(key, "surface") == 0)
-    {
-        if(lua_testinstance(L, 3, "MadObject") != NULL) // Es un MadObject o derivado?
-        {
-            if(lua_testinstance(L, 3, "Button") != NULL) // es un boton?
-                return luaL_error(L, "Error: Cannot assign a button as a surface to a button.");
-
-            if(!isNullMadObjectRef((*self)->surface))
-                luaL_unref(L, LUA_REGISTRYINDEX, (*self)->surface.ref);
-            MadObject** object = (MadObject**)lua_touserdata(L, 3);
-            (*self)->surface.obj = *object;
-            lua_pushvalue(L, 3);
-            (*self)->surface.ref = luaL_ref(L, LUA_REGISTRYINDEX);
-        }
-    }
-    else if(strcmp(key, "disabled") == 0)
-        (*self)->disabled = (bool)lua_toboolean(L, 3);
-    else
-        lua_setDinamicField(L, 1, key);
-
-    return 0;
-}
-
-int Button_gc(lua_State* L)
-{
-    Button** self = (Button**)lua_checkinstance(L, 1, "Button");
-    if(*self != NULL)
-    {
-        Button_free(*self);
-        free(*self);
-        *self = NULL;
-    }
-    return 0;
-}
-
 void Button_register(lua_State* L)
 {
+    /*
     luaL_newmetatable(L, "Button");
 
     lua_pushcfunction(L, Button_indexLua);
@@ -206,4 +134,13 @@ void Button_register(lua_State* L)
     lua_setfield(L, -2, "__extends");
 
     lua_setglobal(L, "Button");
+    */
+    Lua_registerclass("Button",
+        CONSTRUCTOR, Button_new,
+        DESTRUCTOR, Button_free,
+        EXTENDS, "MadObject",
+        FIELD, "surface", TMADOBJECTREF, offsetof(Button, surface),
+        FIELD, "disabled", TBOOL, offsetof(Button, disabled),
+        END
+    );
 }

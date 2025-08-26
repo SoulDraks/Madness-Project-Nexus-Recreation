@@ -1,4 +1,5 @@
 #include "Panel.h"
+#include "Lua/Bindings.h"
 
 Panel* Panel_new()
 {
@@ -39,60 +40,9 @@ void Panel_draw(void* self, SDL_Renderer* renderer)
     }
 }
 
-/* <------- BINDINGS ------->*/
-
-static int Panel_newLua(lua_State* L)
-{
-    Panel* instance = Panel_new(); 
-    Panel** instance_lua = (Panel**)lua_newuserdata(L, sizeof(Panel*));
-    *instance_lua = instance;
-    MADOBJECT_NEWLUA((MadObject*)instance);
-
-    luaL_getmetatable(L, "Panel");
-    lua_setmetatable(L, -2);
-    return 1;
-}
-
-static int Panel_indexLua(lua_State* L)
-{
-    Panel** self = (Panel**)lua_checkinstance(L, 1, "Panel");
-    const char* key = luaL_checkstring(L, 2);
-    MADOBJECT_INDEXLUA((MadObject**)self)
-    else if(strcmp(key, "borderColor") == 0)
-        lua_pushColor(L, (*self)->borderColor);
-    else if(strcmp(key, "borderSize") == 0)
-        lua_pushinteger(L, (*self)->borderSize);
-    else
-        lua_getDinamicField(L, 1, key);
-    
-    return 1;
-}
-
-static int Panel_newindexLua(lua_State* L)
-{
-    Panel** self = (Panel**)lua_checkinstance(L, 1, "Panel");
-    const char* key = luaL_checkstring(L, 2);
-    MADOBJECT_NEWINDEXLUA((MadObject**)self)
-    else if(strcmp(key, "borderColor_r") == 0)
-        (*self)->borderColor.r = lua_checkColor(L, 3).r;
-    else if(strcmp(key, "borderColor_g") == 0)
-        (*self)->borderColor.g = lua_checkColor(L, 3).g;
-    else if(strcmp(key, "borderColor_b") == 0)
-        (*self)->borderColor.b = lua_checkColor(L, 3).b;
-    else if(strcmp(key, "borderColor_a") == 0)
-        (*self)->borderColor.r = lua_checkColor(L, 3).a;
-    else if(strcmp(key, "borderColor") == 0)
-        (*self)->borderColor = lua_checkColor(L, 3);
-    else if(strcmp(key, "borderSize") == 0)
-        (*self)->borderSize = luaL_checkinteger(L, 3);
-    else
-        lua_setDinamicField(L, 1, key);
-    
-    return 0;
-}
-
 void Panel_register(lua_State* L)
 {
+    /*
     luaL_newmetatable(L, "Panel");
 
     lua_pushcfunction(L, Panel_newLua);
@@ -111,4 +61,13 @@ void Panel_register(lua_State* L)
     lua_setfield(L, -2, "__extends"); // Indicamos que la "Clase" Panel "hereda" de "MadObject".
 
     lua_setglobal(L, "Panel");
+    */
+   Lua_registerclass("Panel", 
+        CONSTRUCTOR, Panel_new,
+        DESTRUCTOR, MadObject_free,
+        EXTENDS, "MadObject",
+        FIELD, "borderColor", TCOLOR, offsetof(Panel, borderColor),
+        FIELD, "borderSize", TINT, offsetof(Panel, borderSize),
+        END
+    );
 }

@@ -6,7 +6,7 @@
 
 struct gifFrame {
     SDL_Texture* frameTexture;
-    float frameDelay;
+    double frameDelay;
 };
 
 typedef struct {
@@ -15,7 +15,7 @@ typedef struct {
     String path;
     int currentFrame; // Define en que frame se encuentra.
     bool playing; // Define si se encuentra reproduciendose.
-    float elapsedTime; // Tiempo transcurrido entre frames.
+    double elapsedTime; // Tiempo transcurrido entre frames.
     int framesCount; // Cantidad de frames que posee el Gif.
     struct gifFrame frames[]; // Array de los frames del gif.
 } Gif;

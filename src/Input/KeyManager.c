@@ -4,8 +4,9 @@
 
 static KeyManager keymanager;
 
-void KeyManager_Init(lua_State* L)
+void KeyManager_Init()
 {
+    lua_State* L = getLuaState();
     keymanager.keyCode = -10;
     keymanager.isDown = false;
     keymanager.isUp = false;

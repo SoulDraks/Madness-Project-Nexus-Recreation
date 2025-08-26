@@ -2,10 +2,8 @@
 #define KEYMANAGER_H
 
 #include <SDL.h>
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
-#include "Lua/LuaManager.h"
+#include "Lua/State.h"
+#include "Lua/Bindings.h"
 #include "types/bool.h"
 
 struct eventListener {
@@ -25,7 +23,7 @@ typedef struct {
     size_t keyUpListeners_size;
 } KeyManager;
 
-extern void KeyManager_Init(lua_State* L);
+extern void KeyManager_Init();
 extern void KeyManager_Update(const int keyCode, const bool isPressed, const bool isReleased);
 extern int KeyManager_getKeyCode();
 extern void KeyManager_callKeyDownListeners();
