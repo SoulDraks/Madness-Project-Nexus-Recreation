@@ -4,7 +4,7 @@ import platform
 import subprocess
 
 env = Environment()
-env.Append(CCFLAGS=["-Og", "-g"])
+env.Append(CCFLAGS=["-O0", "-g"])
 
 # Rutas de las bibliotecas usadas.
 SDL_dir = "external/SDL-2.30.12"

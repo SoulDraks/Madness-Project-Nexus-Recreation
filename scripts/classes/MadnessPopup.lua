@@ -81,6 +81,7 @@ end
 function MadnessPopup:addPopup(inType, inText, inChar, inStickX, inStickY, inLinkedItem, inTimer, inYesFunction, inNoFunction)
     local popup
     if self.popups[inType] == nil then
+        -- Si el popup no existe, los cargamos
         local path = "scripts/popups/" .. inType .. ".lua"
         popup = dofile(path)
         self.popups[inType] = popup
@@ -118,15 +119,16 @@ end
 function MadnessPopup:beginPopup()
     local currentPopup = self.pendingPopups[1]
     table.remove(self.pendingPopups, 1)
-    if not currentPopup.buffer then -- ¿Es un buffer el popup actual?
-        if currentPopup.myTextField ~= nil then
-            currentPopup.myTextField.text = currentPopup.myText
+    if not currentPopup.buffer then -- ¿No es un buffer el popup actual?
+        local myTextField = currentPopup:getChild("myTextField")
+        if myTextField ~= nil then
+            myTextField.text = currentPopup.myText
         end
         if currentPopup.myType == "yesno" then
-            if currentPopup.myTextField.text ~= "(you will lose all current progress)" then
-                currentPopup.myTextField.pos = Vector2.new(42, 55)
+            if myTextField.text ~= "(you will lose all current progress)" then
+                myTextField.pos = Vector2.new(42, 55)
             else
-                currentPopup.myTextField.pos = Vector2.new(77, 55)
+                myTextField.pos = Vector2.new(77, 55)
             end
         end
         if currentPopup.buttons ~= nil then
@@ -141,7 +143,7 @@ function MadnessPopup:beginPopup()
         self.visible = true
     end
     self.currentPopup = currentPopup
-    init = currentPopup:getChild("closeBtn"):getChild(1)
+    init = currentPopup
 end
 
 -- Implementalo mamahuevo
@@ -154,8 +156,11 @@ function MadnessPopup:pressYes(inPlayerPressedYesManually)
     if inPlayerPressedYesManually then
         -- Aca se deberia reproducir el sonido 'menu4'. recordalo mamaguevo
     end
-    self.currentPopup.myYesFunction()
+    if self.currentPopup.myYesFunction ~= nil then
+        self.currentPopup.myYesFunction()
+    end
     self:closePopup()
+    collectgarbage("collect")
 end
 
 function MadnessPopup:pressNo()

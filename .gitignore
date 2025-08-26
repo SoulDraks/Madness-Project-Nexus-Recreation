@@ -1,0 +1,5 @@
+*.exe
+*.o
+.sconsign.dblite
+*.a
+*.dll

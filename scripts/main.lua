@@ -5,12 +5,11 @@ init = dofile("scripts/menu/init.lua")
 local main_menu = dofile("scripts/menu/main_menu.lua")
 MadnessWorldMap = dofile("scripts/menu/worldmap.lua")
 _root.UI:addChild(init)
+init = init:getChild("background")
 CurrentTime = 0
--- Engine.fps = 1
 
 local objeto = MadObject.new()
 objeto.name = "Temporizador"
-objeto:getChild("Temporizador2")
 function objeto:tick(delta)
     if Pressed then
         CurrentTime = CurrentTime + delta
@@ -46,15 +45,32 @@ function ManejarTeclas(KeyCode)
     end
     if KeyCode == Key.SPACE then
         print(init.pos)
+        --print(init.size)
         print(init.scale)
     end
     if KeyCode == Key.M then
+        --init.size_x = init.size.x + 1
+        --[[
         init.scale_x = init.scale.x + 0.01
         init.scale_y = init.scale.y + 0.01
+        ]]
+        init.rotation = init.rotation + 1
     end
     if KeyCode == Key.N then
+        --init.size_x = init.size.x - 1
+        --[[
         init.scale_x = init.scale.x - 0.01
         init.scale_y = init.scale.y - 0.01
+        ]]
+        init.rotation = init.rotation - 1
+    end
+    if KeyCode == Key.L then
+        --init.size_y = init.size.y + 1
+        --init.scale_y = init.scale.y - 0.01
+    end
+    if KeyCode == Key.K then
+        --init.size_y = init.size.y - 1
+        --init.scale_y = init.scale.y - 0.01
     end
 end
 

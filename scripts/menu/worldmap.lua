@@ -1,5 +1,30 @@
 local MadnessWorldMap = MadObject.new()
 
+-- Deshabilita todos los iconos que esten desbloqueados para que no puedan presionarse.
+local function disableIconLevels(icons)
+    for i = 1, icons.childCount do
+        local icon = icons:getChild(i)
+        if icon.unlocked then
+            icon.disabled = true
+        end
+    end
+end
+
+-- Deshabilita todos los iconos que esten desbloqueados para que no puedan presionarse.
+local function enableIconLevels(icons)
+    for i = 1, icons.childCount do
+        local icon = icons:getChild(i)
+        if icon.unlocked then
+            icon.disabled = false
+        end
+    end
+end
+
+local function pressProceed()
+    enableIconLevels(MadnessWorldMap:getChild("world1"):getChild("icons"))
+    MadnessWorldMap:getChild("arrowLevel"):getChild(1):stop()
+end
+
 local function createIconLevel(inPath, unlocked, borderSize)
     if borderSize == nil then
         borderSize = 3
@@ -11,7 +36,7 @@ local function createIconLevel(inPath, unlocked, borderSize)
     local blackShadow = icon:makeImageColor(Color.new("B0000000"))
     local redShadow = icon:makeImageColor(Color.new("54FF2C2C"))
     redBorder.pos = (icon.size - redBorder.size) / 2
-    -- Dejamos que por defecto, el boton del nivel este deshabilitado
+    -- Dejamos que por defecto, el boton del nivel este bloqueado
     redBorder.visible = false
     redShadow.visible = false
     blackShadow.visible = true
@@ -22,7 +47,6 @@ local function createIconLevel(inPath, unlocked, borderSize)
     redBorder.name = "redBorder"
     blackShadow.name = "blackShadow"
     redShadow.name = "redShadow"
-    iconLevel.blocked = unlocked
     iconLevel:addChild(redBorder)
     iconLevel:addChild(icon) -- Lo ponemos encima de el bordeado rojo porque de lo contrario, tapara al icono
     iconLevel:addChild(blackShadow)
@@ -34,7 +58,8 @@ local function createIconLevel(inPath, unlocked, borderSize)
         iconLevel.disabled = false
     end
     function iconLevel:onReleased()
-        MadnessPopup:addPopup("mission", "XDDDDDDD", nil, 0, 0, nil, 10, nil, nil)
+        disableIconLevels(MadnessWorldMap:getChild("world1"):getChild("icons"))
+        MadnessPopup:addPopup("mission", "In order to bring about the end of the Nexus Project,\nHank has been hired to enlist the help of incarcerated\nagents, Sanford and Deimos.en hired to enlist the help of\nincarcerated agents, Sanford and Deimos.", nil, 0, 0, nil, 10, nil, nil)
     end
     function iconLevel:onHover()
         redShadow.visible = true
@@ -45,29 +70,12 @@ local function createIconLevel(inPath, unlocked, borderSize)
     return iconLevel
 end
 
-local function unlockIconLevel(iconLevel)
-    iconLevel.unlocked = true
+-- Desbloquea el icono de nivel para que ahora sea jugable o seleccionable.
+local function enableIconLevel(iconLevel, unlocked)
+    iconLevel.unlocked = unlocked
     iconLevel.disabled = false
     iconLevel:getChild("redBorder").visible = true
-    iconLevel:getChild("blackShadow").visible = false 
-end
-
-local function disableIconLevels(icons)
-    for i = 1, icons.childCount do
-        local icon = icons:getChild(i)
-        if icon.unlocked then
-            icon.disabled = true
-        end
-    end
-end
-
-local function enableIconLevels(icons)
-    for i = 1, icons.childCount do
-        local icon = icons:getChild(i)
-        if icon.unlocked then
-            icon.disabled = false
-        end
-    end
+    iconLevel:getChild("blackShadow").visible = false
 end
 
 -- Arrays que contiene los personajes que estaran en el nivel dado
@@ -160,38 +168,41 @@ MadnessWorldMap:addChild(title)
 local world1 = MadObject.new()
 world1.visible = true
 world1.name = "world1"
+local world1_icons = MadObject.new()
+world1_icons.name = "icons"
+world1:addChild(world1_icons)
 local level_1_A = createIconLevel("assets/worldmap/level_1_A.png", true)
 level_1_A.name = "level_1_A"
 level_1_A.pos = Vector2.new(115, 137)
-world1:addChild(level_1_A)
+world1_icons:addChild(level_1_A)
 local level_1_B = createIconLevel("assets/worldmap/level_1_B.png", false)
 level_1_B.name = "level_1_B"
 level_1_B.pos = Vector2.new(73, 304)
-world1:addChild(level_1_B)
+world1_icons:addChild(level_1_B)
 local level_1_C = createIconLevel("assets/worldmap/level_1_C.png", false)
 level_1_C.name = "level_1_C"
 level_1_C.pos = Vector2.new(396, 155)
-world1:addChild(level_1_C)
+world1_icons:addChild(level_1_C)
 local level_1_D = createIconLevel("assets/worldmap/level_1_D.png", false)
 level_1_D.name = "level_1_D"
 level_1_D.pos = Vector2.new(542, 100)
-world1:addChild(level_1_D)
+world1_icons:addChild(level_1_D)
 local level_1_E = createIconLevel("assets/worldmap/level_1_E.png", false)
 level_1_E.name = "level_1_E"
 level_1_E.pos = Vector2.new(223, 353)
-world1:addChild(level_1_E)
+world1_icons:addChild(level_1_E)
 local level_1_F = createIconLevel("assets/worldmap/level_1_F.png", false)
 level_1_F.name = "level_1_F"
 level_1_F.pos = Vector2.new(384, 274)
-world1:addChild(level_1_F)
+world1_icons:addChild(level_1_F)
 local level_1_G = createIconLevel("assets/worldmap/level_1_G.png", false)
 level_1_G.name = "level_1_G"
 level_1_G.pos = Vector2.new(657, 185)
-world1:addChild(level_1_G)
+world1_icons:addChild(level_1_G)
 local level_1_H = createIconLevel("assets/worldmap/level_1_H.png", false)
 level_1_H.name = "level_1_H"
 level_1_H.pos = Vector2.new(585, 392)
-world1:addChild(level_1_H)
+world1_icons:addChild(level_1_H)
 MadnessWorldMap:addChild(world1)
 
 -- Hacemos la flechita del nivel.
@@ -228,13 +239,15 @@ btnProceedEpisode1_5:addChild(redBorder)
 
 function MadnessWorldMap:adjustMap()
     local unlockedLevels = {true, true, true, true, true, false, false, false}
-    local icons = world1:getChildren()
+    local icons = world1_icons:getChildren()
     for i = 1, #unlockedLevels do
         if icons[i] == nil then
             break
         end
-        if unlockedLevels[i] and not icons[i].unlocked or unlockedLevels[i - 1] then -- ¿Estaba bloqueado pero ahora esta desbloqueado o el nivel anterior fue completado?
-            unlockIconLevel(icons[i])
+        if unlockedLevels[i] and not icons[i].unlocked then -- ¿Estaba bloqueado pero ahora esta desbloqueado?
+            enableIconLevel(icons[i], true)
+        elseif unlockedLevels[i - 1] then -- ¿El nivel anterior fue completado?
+            enableIconLevel(icons[i], false)
         end
     end
     local levelSelected = 1 
@@ -245,6 +258,7 @@ function MadnessWorldMap:adjustMap()
             break
         end
     end
+    -- Ajustamos la flecha de nivel al ultimo nivel desbloqueado
     local iconPos = icons[levelSelected].pos
     local iconSize = icons[levelSelected].size
     arrowLevel.pos = Vector2.new(iconPos.x + iconSize.x / 2, iconPos.y)

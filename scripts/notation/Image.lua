@@ -1,3 +1,9 @@
+SizeMode = {
+    STRETCH = 0,
+    ZOOM = 1,
+    CUT = 2
+}
+
 Image = {}
 Image.pos = Vector2.new()
 Image.pos_x = 0
@@ -21,6 +27,7 @@ Image.color_b = 255
 Image.color_a = 255
 Image.childCount = 0
 Image.path = "path.png"
+Image.sizeMode = SizeMode.STRETCH
 
 --- Genera una instancia de Image de la imagen en la ruta especificada.
 ---@param path string

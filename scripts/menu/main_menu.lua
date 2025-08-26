@@ -1,5 +1,3 @@
--- <-------- Nueva Version del Codigo. -------->
-
 -- Configura un boton automaticamente de la seleccion de modos de juego.
 local function setup_button(button, surfaces, pos)
     button.surface = surfaces[1]
@@ -290,11 +288,12 @@ function arena_btn:onReleased()
 end
 
 local function pressYesStory()
-    MadnessTransition:createTransition("fade", function()
+    MadnessTransition:createTransition("endgame", function()
         _root.UI:removeChild(main_menu.name)
         _root.UI:addChild(MadnessWorldMap)
         MadnessWorldMap:adjustMap()
         init = MadnessWorldMap:getChild("XD")
+        enableButtons()
     end)
 end
 
@@ -329,7 +328,7 @@ function arena_new_game_btn:onPressed()
     disableButtons()
     self.disabled = true
     arena_continue_btn.disabled = true
-    MadnessPopup:addPopup("yesno", "You\'re about to ruin the entirety of your data.", nil, 425, 180, main_menu, -1, pressYesArena, pressNoArena)
+    MadnessPopup:addPopup("yesno", "You\"re about to ruin the entirety of your data.", nil, 425, 180, main_menu, -1, pressYesArena, pressNoArena)
 end
 
 sub_menus:addChild(border_texts)

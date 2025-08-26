@@ -29,8 +29,6 @@ function MadObject:getParent() return MadObject end
 
 function MadObject:addChild(newChild) end
 
----@param name string
----@overload fun(index: integer)
 function MadObject:getChild(name) return MadObject end
 
 --- Da un array con todos los hijos

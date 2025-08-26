@@ -91,6 +91,10 @@
     "keymanager.h": "c",
     "surfaceeffects.h": "c",
     "stdio.h": "c",
-    "string.h": "c"
-  }
+    "string.h": "c",
+    "functional": "c",
+    "state.h": "c",
+    "*.n": "c"
+  },
+  "cmake.sourceDirectory": "C:/Users/usuario/Desktop/Madness Project Nexus Proyecto C/external/SDL_image-2.8.8/external/libjxl"
 }

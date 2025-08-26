@@ -6,6 +6,7 @@ local background = Image.load("assets/menu/init/background.png")
 background.name = "background"
 background.pos = Vector2.new(-4, 0)
 background.color_a = 58
+background.sizeMode = SizeMode.ZOOM
 init:addChild(background)
 
 local background_animation = Animation.new()
@@ -43,7 +44,9 @@ init:addChild(launch_button_base)
 
 local launch_button = Button.new()
 local launch_surface1 = Image.load("assets/menu/init/launch.png")
+launch_surface1.name = "launch_surface1"
 local launch_surface2 = Image.load("assets/menu/init/launch_on_hover.png")
+launch_surface1.name = "launch_surface2"
 launch_button.name = "launch_button"
 launch_button.surface = launch_surface1
 launch_button.size = launch_surface1.size
