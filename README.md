@@ -1,14 +1,14 @@
 # Madness Project Nexus - Recreation
 
-Una recreacion del juego "Madness Project Nexus: Classic" realizada en C y Lua respectivamente
-- 👥 Integrantes:
+Recreación no oficial del juego "Madness Project Nexus: Classic", desarrollada en C y Lua.
+## 👥 Integrantes:
 - Alexis Martinez
 - Juan Martinez
 - Mia Rojas
 - Isaias Ortega
 
-- 💻 Bibliotecas usadas:
-- SDL2
-- SDL2_image
-- SDL2_ttf
-
+## 💻 Bibliotecas usadas:
+- **SDL2** — Renderizado, ventanas y manejo de eventos
+- **SDL2_image** — Carga de imágenes y texturas adicionales
+- **SDL2_ttf** — Renderizado de texto
+- **Lua** — Lógica de gameplay y scripts
