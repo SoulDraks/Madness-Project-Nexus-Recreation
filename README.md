@@ -18,6 +18,16 @@ El proyecto utiliza SCons como sistema de build.
 
 Para compilar el proyecto:
 ```Shell
-    scons
+scons
 ```
 ya el script se encarga de todo de la construccion y dependencias
+
+# 📂 Estructura del Proyecto
+```
+Madness Project Nexus - Recreation
+├─ assets     -> Imágenes, fuentes y recursos
+├─ external   -> Bibliotecas/Dependencias del proyecto
+├─ scripts    -> Scripts Lua (IA, escenas, gameplay)
+├─ src        -> Código en C (motor, render, físicas, etc.)
+└─ SConstruct -> Archivo de build del proyecto
+```
